@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "dockerashmiza/my-python-app"
+        DOCKER_IMAGE = "ashmizashah/docker"
         DOCKER_REGISTRY = "https://index.docker.io/v1/"
         DOCKER_CREDENTIALS_ID = "dockerhub-credentials"
     }
