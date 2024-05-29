@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/AshmizaShah/subtask4.git'
+                git 'https://github.com/AshmizaShah/subtask6.git'
             }
         }
 
