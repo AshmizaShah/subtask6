@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "ashmizashah/docker"
         DOCKER_REGISTRY = "https://index.docker.io/v1/"
-        DOCKER_CREDENTIALS_ID = "dockerhub-credentials"
+        DOCKER_CREDENTIALS_ID = "this docker hub psswd"
     }
 
     stages {
