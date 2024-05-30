@@ -1,9 +1,12 @@
-# Use the official Jenkins image from the Docker Hub
-FROM jenkins/jenkins:latest
+FROM node:14-alpine
 
-# Install necessary plugins if needed
-# Example:
-#RUN /usr/local/bin/install-plugins.sh docker-plugin github-plugin
+WORKDIR /app
 
-# Copy the Jenkinsfile into the container
-COPY Jenkinsfile /usr/share/jenkins/ref/Jenkinsfile
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
