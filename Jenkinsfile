@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "ashmizashah/docker"
-        DOCKER_REGISTRY = "https://index.docker.io/v1/"
-        DOCKER_CREDENTIALS_ID = "this docker hub psswd"
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials') // Jenkins credentials ID
+        DOCKER_IMAGE = 'ashmizashah/docker' // Docker Hub repository name
     }
 
     stages {
@@ -17,7 +16,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                    docker.build(DOCKER_IMAGE)
                 }
             }
         }
@@ -25,8 +24,8 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry(DOCKER_REGISTRY, DOCKER_CREDENTIALS_ID) {
-                        docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").push('latest')
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_HUB_CREDENTIALS) {
+                        docker.image(DOCKER_IMAGE).push('latest')
                     }
                 }
             }
@@ -34,7 +33,13 @@ pipeline {
 
         stage('Deploy to Testing Environment') {
             steps {
-                sh 'docker run -d -p 80:80 --name my-python-app ${DOCKER_IMAGE}:latest'
+                script {
+                    // Stop and remove any existing container with the same name
+                    sh 'docker stop my-python-app || true && docker rm my-python-app || true'
+                    
+                    // Run the new container
+                    sh 'docker run -d -p 80:80 --name my-python-app ashmizashah/docker:latest'
+                }
             }
         }
     }
