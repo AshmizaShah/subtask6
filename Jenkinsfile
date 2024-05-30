@@ -2,13 +2,14 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials') // Jenkins credentials ID
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials') // Jenkins credentials ID for Docker Hub
         DOCKER_IMAGE = 'ashmizashah/docker' // Docker Hub repository name
     }
 
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the repository
                 git 'https://github.com/AshmizaShah/subtask6.git'
             }
         }
@@ -16,7 +17,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build(DOCKER_IMAGE)
+                    // Build the Docker image using the Dockerfile in the repository
+                    def image = docker.build("${env.DOCKER_IMAGE}:${env.BUILD_ID}")
                 }
             }
         }
@@ -24,8 +26,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_HUB_CREDENTIALS) {
-                        docker.image(DOCKER_IMAGE).push('latest')
+                    // Login to Docker Hub and push the Docker image
+                    docker.withRegistry('https://index.docker.io/v1/', env.DOCKER_HUB_CREDENTIALS) {
+                        def image = docker.image("${env.DOCKER_IMAGE}:${env.BUILD_ID}")
+                        image.push('latest')
+                        image.push("${env.BUILD_ID}")
                     }
                 }
             }
@@ -36,10 +41,19 @@ pipeline {
                 script {
                     // Stop and remove any existing container with the same name
                     sh 'docker stop my-python-app || true && docker rm my-python-app || true'
-                    
-                    // Run the new container
-                    sh 'docker run -d -p 80:80 --name my-python-app ashmizashah/docker:latest'
+
+                    // Run the new container from the latest image
+                    sh "docker run -d -p 80:80 --name my-python-app ${env.DOCKER_IMAGE}:latest"
                 }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean up any remaining Docker images to save space
+            script {
+                sh 'docker rmi $(docker images -q ${env.DOCKER_IMAGE}) || true'
             }
         }
     }
