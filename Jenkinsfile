@@ -1,19 +1,36 @@
-FROM node:18
-
-# Set working directory
-WORKDIR /app
-
-# Copy package.json and package-lock.json files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application code
-COPY . .
-
-# Expose port 4200
-EXPOSE 4200
-
-# Command to run the application
-CMD ["npm", "start"]
+pipeline {
+    environment {
+        registry = "ashmizashah/docker"
+        registryCredential = 'dockerhub_id'
+        dockerImage = ''
+    }
+    agent any
+    stages {
+        stage('Cloning our Git') {
+            steps {
+                git 'https://github.com/AshmizaShah/subtask6.git'
+            }
+        }
+        stage('Building our image') {
+            steps {
+                script {
+                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                }
+            }
+        }
+        stage('Deploy our image') {
+            steps {
+                script {
+                    docker.withRegistry('', registryCredential) {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+        stage('Cleaning up') {
+            steps {
+                sh "docker rmi $registry:$BUILD_NUMBER"
+            }
+        }
+    }
+}
