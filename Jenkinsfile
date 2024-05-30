@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials') // Jenkins credentials ID for Docker Hub
+        DOCKER_HUB_CREDENTIALS = credentials('docker') // Jenkins credentials ID for Docker Hub
         DOCKER_IMAGE = 'ashmizashah/docker' // Docker Hub repository name
     }
 
@@ -24,7 +24,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_HUB_CREDENTIALS) {
+                    docker.withRegistry('https://hub.docker.com/repositories/ashmizashah', DOCKER_HUB_CREDENTIALS) {
                         docker.image(env.DOCKER_IMAGE).push("${env.BUILD_NUMBER}")
                         docker.image(env.DOCKER_IMAGE).push("latest")
                     }
