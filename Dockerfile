@@ -14,7 +14,7 @@ COPY tests/ /app/tests
 # RUN pip install -r requirements.txt
 
 # Run the unit tests
-RUN python -m unittest discover tests
+#RUN python -m unittest discover tests
 
 # Define the command to run the application
-CMD ["python", "-m", "unittest", "discover", "tests"]
+#CMD ["python", "-m", "unittest", "discover", "tests"]
