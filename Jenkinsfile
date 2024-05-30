@@ -1,45 +1,38 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker) // Jenkins credentials ID for Docker Hub
-        DOCKER_IMAGE = 'ashmizashah/docker' // Docker Hub repository name
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Clone repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/AshmizaShah/subtask6.git'
+                checkout scm
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build image') {
             steps {
                 script {
-                    docker.build(env.DOCKER_IMAGE)
+                    app = docker.build("ashmizashah/docker:${env.BUILD_NUMBER}")
                 }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Test image') {
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', DOCKER_HUB_CREDENTIALS) {
-                        docker.image(env.DOCKER_IMAGE).push("${env.BUILD_NUMBER}")
-                        docker.image(env.DOCKER_IMAGE).push("latest")
+                    app.inside {
+                        sh 'npm test'
                     }
                 }
             }
         }
 
-        stage('Deploy to Testing Environment') {
+        stage('Push image') {
             steps {
                 script {
-                    // Stop and remove any existing container with the same name
-                    sh 'docker stop my-python-app || true && docker rm my-python-app || true'
-
-                    // Run the new container from the latest image
-                    sh "docker run -d -p 80:80 --name my-python-app ${env.DOCKER_IMAGE}:latest"
+                    docker.withRegistry('https://registry.hub.docker.com', 'git') {
+                        app.push("${env.BUILD_NUMBER}")
+                        app.push("latest")
+                    }
                 }
             }
         }

@@ -1,20 +1,19 @@
-# Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+FROM node:14
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy the src directory to the working directory
-COPY src/ /app
+# Copy package.json and package-lock.json files
+COPY package*.json ./
 
-# Copy the tests directory to the working directory
-COPY tests/ /app/tests
+# Install dependencies
+RUN npm install
 
-# Install dependencies (if any), for now, there are none
-# RUN pip install -r requirements.txt
+# Copy the rest of the application code
+COPY . .
 
-# Run the unit tests
-#RUN python -m unittest discover tests
+# Expose port 4200
+EXPOSE 4200
 
-# Define the command to run the application
-#CMD ["python", "-m", "unittest", "discover", "tests"]
+# Command to run the application
+CMD ["npm", "run", "start"]
