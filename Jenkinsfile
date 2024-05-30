@@ -1,35 +1,36 @@
 pipeline {
-    environment {
-        registry = "ashmizashah/docker"
-        registryCredential = 'dockerhub_id'
-        dockerImage = ''
-    }
     agent any
+    
+    environment {
+        DOCKER_REGISTRY = "https://hub.docker.com."
+        IMAGE_NAME = "ashmizashah/docker"
+        TAG_NAME = "latest" // You can use any tag you prefer
+    }
+    
     stages {
-        stage('Cloning our Git') {
-            steps {
-                git 'https://github.com/AshmizaShah/subtask6.git'
-            }
-        }
-        stage('Building our image') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                    // Build Docker image
+                    docker.build("${IMAGE_NAME}:${TAG_NAME}")
                 }
             }
         }
-        stage('Deploy our image') {
+        
+        stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('', registryCredential) {
-                        dockerImage.push()
+                    // Push Docker image to registry
+                    docker.withRegistry('https://${DOCKER_REGISTRY}', 'docker') {
+                        docker.image("${IMAGE_NAME}:${TAG_NAME}").push()
                     }
                 }
             }
         }
-        stage('Cleaning up') {
+        
+        stage('Deploy to Testing/Staging') {
             steps {
-                sh "docker rmi $registry:$BUILD_NUMBER"
+                // Add deployment steps here if needed
             }
         }
     }
