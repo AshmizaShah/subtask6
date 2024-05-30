@@ -12,7 +12,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    dockerImagedocker.push('docker.io/ashmizashah/my-app:latest')
+                    dockerImage.push('docker.io/ashmizashah/my-app:latest')
                 }
             }
         }
