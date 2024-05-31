@@ -13,8 +13,9 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Push the Docker image to Docker Hub
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker') {
+                    // Use the specified Docker registry and credentials
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker') {
+                        // Push the Docker image to Docker Hub
                         dockerImage.push('latest')
                     }
                 }
