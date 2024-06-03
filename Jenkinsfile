@@ -41,13 +41,6 @@ pipeline {
                 }
             }
         }
-        stage('Send Email Notification') {
-            steps {
-                script {
-                    sendEmailNotification()
-                }
-            }
-        }
     }
 
     post {
@@ -61,16 +54,4 @@ def ansibleDeploy() {
     sh """
         ansible-playbook -i ${ANSIBLE_DIR}/hosts ${ANSIBLE_DIR}/${ANSIBLE_PLAYBOOK} --extra-vars "docker_image=${DOCKER_IMAGE}"
     """
-}
-
-def sendEmailNotification() {
-    def buildStatus = currentBuild.currentResult
-    def subject = buildStatus == 'SUCCESS' ? "Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}" : "Jenkins Build Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-    def body = buildStatus == 'SUCCESS' ? "Good news! The Jenkins build for ${env.JOB_NAME} #${env.BUILD_NUMBER} has succeeded.\n\nCheck the details here: ${env.BUILD_URL}" : "Unfortunately, the Jenkins build for ${env.JOB_NAME} #${env.BUILD_NUMBER} has failed.\n\nCheck the details here: ${env.BUILD_URL}"
-    
-    emailext(
-        subject: subject,
-        body: body,
-        recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-    )
 }
