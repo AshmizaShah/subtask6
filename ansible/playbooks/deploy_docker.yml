@@ -1,3 +1,4 @@
+---
 - name: Deploy Docker Container
   hosts: all
   become: true
@@ -5,22 +6,5 @@
     docker_image: "ashmizashah/docker:latest"
   tasks:
     - name: Ensure Docker is installed
-      apt:
-        name: docker.io
-        state: present
-        update_cache: yes
-
-    - name: Pull Docker image
-      docker_image:
-        name: "{{ docker_image }}"
-        source: pull
-
-    - name: Run Docker container
-      docker_container:
-        name: my_app
-        image: "{{ docker_image }}"
-        state: started
-        restart_policy: always
-        ports:
-          - "3000:3000"
-
+      ansible.builtin.command:
+        cmd: "yum install -y docker"
