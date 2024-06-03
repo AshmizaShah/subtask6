@@ -8,6 +8,8 @@ pipeline {
         GIT_BRANCH = 'main'
         ANSIBLE_DIR = 'ansible'
         ANSIBLE_PLAYBOOK = 'playbooks/deploy_docker.yml'
+        EMAIL_SUBJECT = '${JOB_NAME} - Build #${BUILD_NUMBER} - ${BUILD_STATUS}'
+        EMAIL_BODY = 'Job ${JOB_NAME} - Build #${BUILD_NUMBER}\n\n${BUILD_URL}\n\nStatus: ${BUILD_STATUS}'
     }
 
     stages {
@@ -45,7 +47,25 @@ pipeline {
 
     post {
         always {
+            script {
+                // Set build status as an environment variable
+                currentBuild.result = currentBuild.currentResult ?: 'SUCCESS'
+                env.BUILD_STATUS = currentBuild.result
+            }
+            // Send email notification
+            emailext(
+                subject: "${EMAIL_SUBJECT}",
+                body: "${EMAIL_BODY}",
+                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+                attachLog: true
+            )
             cleanWs()
+        }
+        success {
+            echo 'Build succeeded!'
+        }
+        failure {
+            echo 'Build failed!'
         }
     }
 }
