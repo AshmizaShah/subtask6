@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = 'dockerhub'
+        DOCKER_HUB_CREDENTIALS = 'docker'
         DOCKER_IMAGE = 'ashmizashah/docker:latest'
         GIT_REPOSITORY = 'https://github.com/AshmizaShah/subtask6.git'
         GIT_BRANCH = 'main'
