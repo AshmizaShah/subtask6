@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_HUB_CREDENTIALS = 'dockerhub'
         DOCKER_IMAGE = 'ashmizashah/docker:latest'
-        GIT_REPOSITORY = 'https://github.com/AshmizaShah/subtask7.git'
+        GIT_REPOSITORY = 'https://github.com/AshmizaShah/subtask6.git'
         GIT_BRANCH = 'main'
         ANSIBLE_DIR = 'ansible'
         ANSIBLE_PLAYBOOK = 'playbooks/deploy_docker.yml'
