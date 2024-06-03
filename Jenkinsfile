@@ -8,8 +8,6 @@ pipeline {
         GIT_BRANCH = 'main'
         ANSIBLE_DIR = 'ansible'
         ANSIBLE_PLAYBOOK = 'playbooks/deploy_docker.yml'
-        EMAIL_SUBJECT = '${JOB_NAME} - Build #${BUILD_NUMBER} - ${BUILD_STATUS}'
-        EMAIL_BODY = 'Job ${JOB_NAME} - Build #${BUILD_NUMBER}\n\n${BUILD_URL}\n\nStatus: ${BUILD_STATUS}'
     }
 
     stages {
@@ -43,29 +41,18 @@ pipeline {
                 }
             }
         }
+        stage('Send Email Notification') {
+            steps {
+                script {
+                    sendEmailNotification()
+                }
+            }
+        }
     }
 
     post {
         always {
-            script {
-                // Set build status as an environment variable
-                currentBuild.result = currentBuild.currentResult ?: 'SUCCESS'
-                env.BUILD_STATUS = currentBuild.result
-            }
-            // Send email notification
-            emailext(
-                subject: "${EMAIL_SUBJECT}",
-                body: "${EMAIL_BODY}",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
-                attachLog: true
-            )
             cleanWs()
-        }
-        success {
-            echo 'Build succeeded!'
-        }
-        failure {
-            echo 'Build failed!'
         }
     }
 }
@@ -74,4 +61,16 @@ def ansibleDeploy() {
     sh """
         ansible-playbook -i ${ANSIBLE_DIR}/hosts ${ANSIBLE_DIR}/${ANSIBLE_PLAYBOOK} --extra-vars "docker_image=${DOCKER_IMAGE}"
     """
+}
+
+def sendEmailNotification() {
+    def buildStatus = currentBuild.currentResult
+    def subject = buildStatus == 'SUCCESS' ? "Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}" : "Jenkins Build Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+    def body = buildStatus == 'SUCCESS' ? "Good news! The Jenkins build for ${env.JOB_NAME} #${env.BUILD_NUMBER} has succeeded.\n\nCheck the details here: ${env.BUILD_URL}" : "Unfortunately, the Jenkins build for ${env.JOB_NAME} #${env.BUILD_NUMBER} has failed.\n\nCheck the details here: ${env.BUILD_URL}"
+    
+    emailext(
+        subject: subject,
+        body: body,
+        recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+    )
 }
